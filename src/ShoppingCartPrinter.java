@@ -248,5 +248,8 @@ final class ShoppingCartPrinter {
                 );
             }
         }
+
+        // TODO add test case for calling the promptUserForItem and pass string
+        // containing the three object values
     }
 }

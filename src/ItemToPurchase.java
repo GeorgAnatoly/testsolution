@@ -6,7 +6,7 @@ final class ItemToPurchase {
     private String itemName;
     private int itemPrice, itemQuantity;
 
-    private ItemToPurchase() {
+    ItemToPurchase() {
         itemName = "none";
         itemPrice = 0;
         itemQuantity = 0;
