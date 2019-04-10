@@ -58,13 +58,13 @@ final class ShoppingCartPrinter {
         var totalPrice = 0;
 
         for(ItemToPurchase item: items) {
-            itemPrice = item.getItemPrice();
-            itemQuantity = item.getItemQuantity();
+            itemPrice = item.getPrice();
+            itemQuantity = item.getQuantity();
             itemCost = itemPrice * itemQuantity;
             totalPrice += itemCost;
 
             System.out.println(
-                item.getItemName() + " " +
+                item.getName() + " " +
                         itemQuantity +
                         " @ $" +
                         itemPrice

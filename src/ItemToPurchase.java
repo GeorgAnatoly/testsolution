@@ -24,27 +24,27 @@ final class ItemToPurchase {
         return item;
     }
 
-    public String getItemName() {
+    String getName() {
         return itemName;
     }
 
-    public void setItemName(String itemName) {
+    void setName(String itemName) {
         this.itemName = itemName;
     }
 
-    public int getItemPrice() {
+    int getPrice() {
         return itemPrice;
     }
 
-    public void setItemPrice(int itemPrice) {
+    void setPrice(int itemPrice) {
         this.itemPrice = itemPrice;
     }
 
-    public int getItemQuantity() {
+    int getQuantity() {
         return itemQuantity;
     }
 
-    public void setItemQuantity(int itemQuantity) {
+    void setQuantity(int itemQuantity) {
         this.itemQuantity = itemQuantity;
     }
 }
