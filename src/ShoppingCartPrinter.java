@@ -1,7 +1,5 @@
 // USES JAVA 12
 
-import java.util.ArrayList;
-import java.util.Scanner;
 
 // just wanted to point out I understood the purpose
 // of the assignment as the ItemToPurchase
@@ -13,7 +11,9 @@ import java.util.Scanner;
 // ItemToPurchase have a meaningful existence in a
 // is not really possible - it's role is rather limited
 
-// I've followed a standard MVC construction with
+import java.util.Scanner;
+
+// I've followed a standard MVC (if antiquated) construction with
 // this class - going to include implicit data
 // transfer objects - that's why the duplicate fields
 // makes code modular and easy to unit test
@@ -21,235 +21,263 @@ import java.util.Scanner;
 // code structure obtained via TDD versus more
 // coupled code without testing in mind
 final class ShoppingCartPrinter {
-    private ShoppingCartPrinterTest tests =
-            new ShoppingCartPrinterTest();
-    private int itemNumber = 0;
+    private Tests tests = new Tests();
+    private Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
         var cart = new ShoppingCartPrinter();
 
-        if(cart.tests.runTests() == -1) {
-            cart.tests.printErrors();
+        var numTests = cart.tests.runTests();
 
+        if(numTests > 0) {
+            System.out.println(numTests);
             return;
         }
 
-        var item = cart.promptUserForItem();
+        var userPromptMessage = "Enter the item name: \n" +
+                "Enter the item price: \n" +
+                "Enter the item quantity: \n";
 
-        var items = new ArrayList<ItemToPurchase>();
+        System.out.println("Item 1");
 
-        items.add(item);
+        var item = getItemInfoFromUser(
+                cart,
+                cart.scanner,
+                userPromptMessage);
 
         System.out.println();
 
-        item = cart.promptUserForItem();
+        System.out.println("Item 2");
 
-        items.add(item);
+        var itemTwo = getItemInfoFromUser(
+                cart,
+                cart.scanner,
+                userPromptMessage);
 
-        System.out.println("\nTOTAL COST");
+        System.out.println();
 
-        cart.displayItemCost(items);
+        System.out.println("total cost".toUpperCase());
+
+        var itemTotalCost = displayItemTotalCost(item);
+
+        System.out.println(itemTotalCost);
+
+        var itemTwoTotalCost = displayItemTotalCost(itemTwo);
+
+        System.out.println(itemTwoTotalCost);
+
+        System.out.println();
+
+        var totalCost = (item.getPrice() * item.getQuantity()) +
+                (itemTwo.getPrice() * itemTwo.getQuantity());
+
+        System.out.println("Total: $" + totalCost);
     }
 
-    private void displayItemCost(ArrayList<ItemToPurchase> items) {
-        var itemPrice = 0;
-        var itemQuantity = 0;
-        var itemCost = 0;
-        var totalPrice = 0;
-
-        for(ItemToPurchase item: items) {
-            itemPrice = item.getPrice();
-            itemQuantity = item.getQuantity();
-            itemCost = itemPrice * itemQuantity;
-            totalPrice += itemCost;
-
-            System.out.println(
-                item.getName() + " " +
-                        itemQuantity +
-                        " @ $" +
-                        itemPrice
-                        + " = $" +
-                    itemCost
-             );
-        }
-
-        System.out.println("\nTotal: $" + totalPrice);
+    private static String displayItemTotalCost(ItemToPurchase item) {
+        return item.getName() + " " + item.getQuantity() + " @ $" +
+                item.getPrice() + " = $" +
+                item.getPrice() * item.getQuantity();
     }
 
-    private ItemToPurchase promptUserForItem() {
-        incrementItemNumber();
-        displayItemNumber();
+    private static ItemToPurchase getItemInfoFromUser(ShoppingCartPrinter cart,
+                                            Scanner scanner,
+                                                      String userPromptMessage) {
+        System.out.print(userPromptMessage);
 
-        promptRequestItemName();
-        var itemName = getFromUserItemName(
-                new Scanner(System.in)
-        );
+        var item = new ItemToPurchase();
 
-        promptRequestItemPrice();
-        var itemPrice = getFromUserItemPrice(
-                new Scanner(System.in)
-        );
+        cart.setItemName(item, scanner);
 
-        promptRequestItemQuantity();
-        var itemQuantity = getFromUserItemQuantity(
-                new Scanner(System.in)
-        );
+        cart.setItemPrice(item, scanner);
 
+        cart.setItemQuantity(item, scanner);
 
-        return ItemToPurchase.getInstance(
-                itemName, itemPrice, itemQuantity
-        );
+        return item;
     }
 
-    private int getFromUserItemQuantity(Scanner scanner) {
-        return scanner.nextInt();
+    private void setItemName(ItemToPurchase item,
+                                    Scanner scanner) {
+        var nameOne = scanner.next();
+        var nameTwo = scanner.next();
+        var nameThree = "";
+
+        if(!scanner.hasNextInt() && scanner.hasNext())
+            nameThree = " " + scanner.next();
+
+        item.setName(nameOne + " " + nameTwo +
+                 nameThree);
     }
 
-    private void promptRequestItemQuantity() {
-        System.out.println("Enter the item quantity: ");
+    private void setItemPrice(ItemToPurchase item,
+                              Scanner scanner) {
+        item.setPrice(scanner.nextInt());
     }
 
-    private int getFromUserItemPrice(Scanner scanner) {
-        return scanner.nextInt();
+    private void setItemQuantity(ItemToPurchase item,
+                                 Scanner scanner) {
+        item.setQuantity(scanner.nextInt());
     }
 
-    private void promptRequestItemPrice() {
-        System.out.println("Enter the item price: ");
-    }
-
-    private void promptRequestItemName() {
-        System.out.println("Enter the item name: ");
-    }
-
-    private String getFromUserItemName(Scanner scanner) {
-        return scanner.nextLine();
-    }
-
-    private void incrementItemNumber() {
-        ++itemNumber;
-
-    }
-
-    private void displayItemNumber() {
-        System.out.println("Item " + itemNumber);
-    }
-
-    private class ShoppingCartPrinterTest {
-        private int failedTests;
-        private ArrayList<String> failedMessages =
-                new ArrayList<>();
-
-        ShoppingCartPrinterTest() {
-            failedTests = 0;
-        }
+    private class Tests {
+        private int numberTestsFailed = 0;
 
         int runTests() {
-            promptUserForItemFirstItemIs1();
-            promptUserForItems9TimesIs10();
-            getFromUserItemNameIsStringFoo();
-            getFromUserItemPriceIsInt3();
-            getFromUserItemQuantityIsInt10();
+            itemSetAndGetName();
+            itemSetAndGetPrice();
+            itemSetAndGetQuantity();
+            cartSetItemNameFromScanner();
+            cartSetItemPriceFromScanner();
+            integrationTestOnCartSetItemNameAndPrice();
+            cartSetItemQuantityFromScanner();
+            integrationTestCartSetNamePriceQuantity();
+            endToEndForSingleStringTwoObjects();
+            displayTotalCostForItemCorrectString();
+            cartSetGetNameForThreeStringFromScanner();
 
-            return failedTests > 0? -1: 0;
+            return numberTestsFailed;
         }
 
-        void printErrors() {
-            for(String message: failedMessages)
-                System.out.println(message);
+        void itemSetAndGetName() {
+            var item = new ItemToPurchase();
+
+            item.setName("Chocolate Chips");
+
+            if(!item.getName().equals("Chocolate Chips"))
+                ++numberTestsFailed;
         }
 
-        <T> void createNewError(String methodName, T expected,
-                            T result) {
-            ++failedTests;
+        void itemSetAndGetPrice() {
+            var item = new ItemToPurchase();
 
-            failedMessages.add(
-                    "FAILED: " + methodName +
-                            "\nExpected " + expected +
-                            " - Got " +
-                            result
-            );
+            item.setPrice(3);
+
+            if(item.getPrice() != 3)
+                ++numberTestsFailed;
         }
 
-        // pretend these are using Assertions.assert...()
-        // methods
-        void promptUserForItemFirstItemIs1() {
+        void itemSetAndGetQuantity() {
+            var item = new ItemToPurchase();
+
+            item.setQuantity(4);
+
+            if(item.getQuantity() != 4)
+                ++numberTestsFailed;
+        }
+
+        void cartSetItemNameFromScanner() {
             var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "Chocolate Chips";
+            var scanner = new Scanner(userInput);
 
-            cart.incrementItemNumber();
+            cart.setItemName(item, scanner);
 
-            if(cart.itemNumber != 1) {
-                createNewError(
-                        "incrementItemNumber",
-                        1,
-                        cart.itemNumber
-                );
-            }
+            if(!item.getName().equals(userInput))
+                ++numberTestsFailed;
         }
 
-        void promptUserForItems9TimesIs10() {
+        void cartSetItemPriceFromScanner() {
             var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "3 1";
+            var scanner = new Scanner(userInput);
 
-            for(int i = 0; i < 10; ++i)
-                cart.incrementItemNumber();
+            cart.setItemPrice(item, scanner);
 
-            if(cart.itemNumber != 10) {
-                createNewError(
-                        "incrementItemNumber",
-                        10,
-                        cart.itemNumber
-                );
-            }
+            if(item.getPrice() != 3)
+                ++numberTestsFailed;
         }
 
-        void getFromUserItemNameIsStringFoo() {
+        void integrationTestOnCartSetItemNameAndPrice() {
             var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "Chocolate Chips 3";
+            var scanner = new Scanner(userInput);
 
-            var response = cart.getFromUserItemName(
-                    new Scanner("Foo")
-            );
+            cart.setItemName(item, scanner);
+            cart.setItemPrice(item, scanner);
 
-            if(!"Foo".equals(response)) {
-                createNewError(
-                        "getFromUserItemName",
-                        "Foo",
-                        response
-                );
-            }
+            if(item.getPrice() != 3)
+                ++numberTestsFailed;
         }
 
-        void getFromUserItemPriceIsInt3() {
+        void cartSetItemQuantityFromScanner() {
             var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "1";
+            var scanner = new Scanner(userInput);
 
-            var response = cart.getFromUserItemPrice(
-                    new Scanner("3")
-            );
+            cart.setItemQuantity(item, scanner);
 
-            if(response != 3) {
-                createNewError(
-                        "getFromUserItemPrice",
-                        3,
-                        response
-                );
-            }
+            if(item.getQuantity() != 1)
+                ++numberTestsFailed;
         }
 
-        void getFromUserItemQuantityIsInt10() {
+        void integrationTestCartSetNamePriceQuantity() {
             var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "Chocolate Chips 3 1";
+            var scanner = new Scanner(userInput);
 
-            var response = cart.getFromUserItemQuantity(
-                    new Scanner("10")
-            );
+            cart.setItemName(item, scanner);
+            cart.setItemPrice(item, scanner);
+            cart.setItemQuantity(item, scanner);
 
-            if(response != 10) {
-                createNewError(
-                        "getFromUserItemQuantity",
-                        10,
-                        response
-                );
-            }
+            if(item.getQuantity() != 1)
+                ++numberTestsFailed;
         }
 
-        // TODO add test case for calling the promptUserForItem and pass string
-        // containing the three object values
+        void endToEndForSingleStringTwoObjects() {
+            var cart = new ShoppingCartPrinter();
+            var userInput = "Chocolate Chips 3 1 Bottled Water 1 10";
+            var scanner = new Scanner(userInput);
+
+            var item = ShoppingCartPrinter.getItemInfoFromUser(
+                    cart,
+                    scanner,
+                    "");
+
+            var itemTwo = ShoppingCartPrinter.getItemInfoFromUser(
+                    cart,
+                    scanner,
+                    "");
+
+            if(!item.getName().equals("Chocolate Chips") ||
+                !itemTwo.getName().equals("Bottled Water"))
+                ++numberTestsFailed;
+
+            if(item.getPrice() != 3 ||
+                itemTwo.getPrice() != 1)
+                ++numberTestsFailed;
+        }
+
+        void displayTotalCostForItemCorrectString() {
+            var item = new ItemToPurchase();
+
+            item.setName("Chocolate Chips");
+            item.setPrice(1);
+            item.setQuantity(3);
+
+            var stringOutput = displayItemTotalCost(item);
+            var validResponse = "Chocolate Chips " + "3 @ $" +
+                    "1 = $3";
+
+            if(!stringOutput.equals(validResponse))
+                ++numberTestsFailed;
+        }
+
+        void cartSetGetNameForThreeStringFromScanner() {
+            var cart = new ShoppingCartPrinter();
+            var item = new ItemToPurchase();
+            var userInput = "NY Yankees Cap";
+            var scanner = new Scanner(userInput);
+
+            cart.setItemName(item, scanner);
+
+            if(!item.getName().equals(userInput))
+                ++numberTestsFailed;
+        }
+
     }
 }

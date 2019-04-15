@@ -12,18 +12,6 @@ final class ItemToPurchase {
         itemQuantity = 0;
     }
 
-    static ItemToPurchase getInstance(
-            String itemName, int itemPrice,
-            int itemQuantity
-    ) {
-        var item = new ItemToPurchase();
-        item.itemName = itemName;
-        item.itemPrice = itemPrice;
-        item.itemQuantity = itemQuantity;
-
-        return item;
-    }
-
     String getName() {
         return itemName;
     }
